@@ -34,17 +34,56 @@ fi
 
 archive=$(basename ${TAR_URL})
 
-# Download package unless we already have it
+# Download package
 echo -n "Downloading package: "
-wget --no-clobber $url -O ${archive} ${TAR_URL}
+wget $url -qO ${archive} ${TAR_URL}
 
 if [ $? -gt 1 ]
 then
     (>&2 echo "Package download failed")
     exit 1
+    rm -f ${archive}
 fi
 
 HERE=$(pwd)
 
+echo
+echo -n "Extracting archive: "
+tar xz --strip-components=1 -C ${DEPLOY_DIR} -f ${archive} 2>/dev/null
+if [ $? -gt 1 ]
+then
+    (>&2 echo "extract failed")
+    rm -f ${archive}
+    exit 1
+fi
+
+rm -f ${archive}
 cd ${DEPLOY_DIR}
-tar tzv --strip-components=1 -f ${HERE}/dynamodb_local_latest.tar.gz
+if [ ! -d ${DEPLOY_DIR}/data ]
+then
+    mkdir ${DEPLOY_DIR}/data
+fi
+
+# Check we have a dynamodb user
+echo
+echo "Ensure dynamodb user exists"
+grep -q dynamodb /etc/passwd
+if [ $? -ne 0 ]
+then
+    useradd dynamodb
+fi
+
+chown -R dynamodb.dynamodb ${DEPLOY_DIR}
+
+echo "Setup service"
+# Setup the systemd service
+if [ ! -d /etc/systemd/system/dynamodb-server.service.d/ ]
+then
+    mkdir /etc/systemd/system/dynamodb-server.service.d/
+fi
+
+# Grab files from github
+wget --progress=dot -qO /lib/systemd/system/dynamodb-server.service https://raw.githubusercontent.com/simonhanmer/local_dynamodb/master/dynamodb-server.service
+wget --progress=dot -qO /etc/systemd/system/dynamodb-server.service.d/custom.conf https://raw.githubusercontent.com/simonhanmer/local_dynamodb/master/custom.conf
+
+systemctl daemon-reload
