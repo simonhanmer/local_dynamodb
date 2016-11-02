@@ -76,14 +76,7 @@ fi
 chown -R dynamodb.dynamodb ${DEPLOY_DIR}
 
 echo "Setup service"
-# Setup the systemd service
-if [ ! -d /etc/systemd/system/dynamodb-server.service.d/ ]
-then
-    mkdir /etc/systemd/system/dynamodb-server.service.d/
-fi
-
 # Grab files from github
 wget --progress=dot -qO /lib/systemd/system/dynamodb-server.service https://raw.githubusercontent.com/simonhanmer/local_dynamodb/master/dynamodb-server.service
-wget --progress=dot -qO /etc/systemd/system/dynamodb-server.service.d/custom.conf https://raw.githubusercontent.com/simonhanmer/local_dynamodb/master/custom.conf
 
 systemctl daemon-reload

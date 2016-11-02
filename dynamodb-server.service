@@ -4,6 +4,8 @@ After=network.target
 Documentation=http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html
 
 [Service]
+Environment=deploydir=/opt/dynamodb
+Environment=dbPath=${deploydir}/data
 Type=simple
 User=dynamodb
 Group=dynamodb
@@ -13,5 +15,4 @@ ExecStart=/usr/bin/java -Djava.library.path=${deploydir} -jar ${deploydir}/Dynam
 
 [Install]
 WantedBy=multi-user.target
-Alias=dynamodb.service
 
