@@ -49,7 +49,7 @@ HERE=$(pwd)
 
 echo
 echo -n "Extracting archive: "
-tar xz --strip-components=1 -C ${DEPLOY_DIR} -f ${archive} 2>/dev/null
+tar xz -C ${DEPLOY_DIR} -f ${archive} 2>/dev/null
 if [ $? -gt 1 ]
 then
     (>&2 echo "extract failed")
